@@ -1,7 +1,7 @@
 /*** 
  * @Author: _yerik
  * @Date: 2025-07-22 14:21:01
- * @LastEditTime: 2025-07-23 01:09:30
+ * @LastEditTime: 2025-07-23 01:36:15
  * @LastEditors: _yerik
  * @Description: 
  * @FilePath: /Simple_Joint/SJ_ws/SJ_Ros2/SJ_hw/src/dm_hw.cpp
@@ -34,7 +34,7 @@ hardware_interface::CallbackReturn DmHW::on_init(const hardware_interface::Hardw
     RCLCPP_INFO(rclcpp::get_logger("DmHW"), "Initializing Damiao Hardware Interface...");
 
     // Initialize runtime data storage for joints
-    hw_actuator_data_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_actuator_data_.resize(info_.joints.size());
 
     // --- STAGE 1: Group joints by serial port from URDF info ---
     std::unordered_map<std::string, int> port_to_baud_rate;
