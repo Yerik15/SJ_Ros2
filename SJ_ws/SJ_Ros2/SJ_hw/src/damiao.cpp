@@ -9,6 +9,7 @@
  */
 #include "SJ_hw/damiao.h"
 #include <signal.h>
+#include <iostream>
 
 using namespace LibSerial ;
 
@@ -100,10 +101,10 @@ Motor_Control::Motor_Control(std::string serial_port,int baud_rate,
     serial_.Open( serial_port );  
     //NOTE:重载的SetBaudRateAPI不一定有用
     //serial_.SetBaudRate( BaudRate::BAUD_115200 );
-    serial_.SetBaudRate( baud_rate );
+    serial_.SetBaudRate( static_cast<LibSerial::BaudRate>(baud_rate) );
     serial_.SetFlowControl( FlowControl::FLOW_CONTROL_NONE );
     serial_.SetParity( Parity::PARITY_NONE );
-    serial_.SetNumOfStopBits( StopBits::STOP_BITS_1 ) ;
+    serial_.SetStopBits( StopBits::STOP_BITS_1 ) ;
     serial_.SetCharacterSize( CharacterSize::CHAR_SIZE_8 );
     usleep(1000000); // 1s
   } catch (const std::exception& e) {
@@ -517,22 +518,23 @@ void Motor_Control::WriteData(const can_send_frame& frame){
     const size_t data_size = sizeof(can_send_frame);
     LibSerial::DataBuffer tx_buffer(frame_ptr, frame_ptr + data_size);
 
-    try {
-        serial_.Write(tx_buffer);
-    }
-    // 1.写入失败
-    catch (const LibSerial::WriteFailed& e) {
-        std::cerr << "Error: Serial write failed. " << e.what() << std::endl;
-    }
-    // 2.端口未打开
-    catch (const LibSerial::NotOpen&) {
-        std::cerr << "Error: Attempted to write to a closed serial port." << std::endl;
-    }
-    // 3.通用捕获
-    catch (const std::exception& e) {
-        std::cerr << "An unhandled exception occurred during serial write: " 
-                  << e.what() << std::endl;
-    } 
+    //TODO:检查命名空间问题
+    // try {
+         serial_.Write(tx_buffer);
+    // }
+    // // 1.写入失败
+    // catch (const LibSerial::WriteFailed& e) {
+    //     std::cerr << "Error: Serial write failed. " << e.what() << std::endl;
+    // }
+    // // 2.端口未打开
+    // catch (const LibSerial::NotOpen&) {
+    //     std::cerr << "Error: Attempted to write to a closed serial port." << std::endl;
+    // }
+    // // 3.通用捕获
+    // catch (const std::exception& e) {
+    //     std::cerr << "An unhandled exception occurred during serial write: " 
+    //               << e.what() << std::endl;
+    // } 
   }
 
 bool Motor_Control::ReadData(CAN_Receive_Frame& frame, const size_t timeout_ms){

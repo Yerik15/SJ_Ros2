@@ -13,12 +13,14 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <SerialPort.h>
+#include <libserial/SerialPort.h>
 #include <thread>
 #include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
+#include <atomic>   
+#include <cstring>  
 #define POS_MODE 0x100
 #define SPEED_MODE 0x200
 #define POSI_MODE 0x300
