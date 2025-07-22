@@ -43,8 +43,8 @@
     <!-- ========================================================= -->
     <joint name="joint1">
       <!-- Serial Params -->
-      <param name="serial_port">${motors['joint1']['port']}</param>
-      <param name="baud_rate">${motors['joint1']['baud']}</param>
+      <param name="serial_port">${motors['joint1']['serial_port']}</param>
+      <param name="baud_rate">${motors['joint1']['baud_rate']}</param>
       <!-- CAN ID -->
       <param name="can_id">${motors['joint1']['can_id']}</param>
       <param name="mst_id">${motors['joint1']['mst_id']}</param>
