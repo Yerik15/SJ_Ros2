@@ -24,7 +24,4 @@
     <hardware_interface plugin="${prefix}/dm_hw_plugins.xml"/> <!-- 定义一个插件描述文件 -->
   </export>
 
-  <export>
-    <build_type>ament_cmake</build_type>
-  </export>
 </package>
