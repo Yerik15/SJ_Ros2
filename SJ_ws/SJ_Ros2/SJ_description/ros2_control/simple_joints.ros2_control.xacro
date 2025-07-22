@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="simple_joints">
+
+    <xacro:property name="motors" 
+        value="${load_yaml(find('SJ_description') + '/config/motors.yaml')}"/>
+
+    <ros2_control name="multi_joints" type="system">
+    <hardware>
+      <plugin>dm_hw/DmHW</plugin>
+    </hardware>
+
+    <!-- ========================================================= -->
+    <!--                  连接在 /dev/ttyACM0 上的电机               -->
+    <!-- ========================================================= -->
+    <joint name="joint0">
+      <!-- Serial Params -->
+      <param name="serial_port">${motors['joint0']['port']}</param>
+      <param name="baud_rate">${motors['joint0']['baud']}</param>
+      <!-- CAN ID -->
+      <param name="can_id">${motors['joint0']['can_id']}</param>
+      <param name="mst_id">${motors['joint0']['mst_id']}</param>
+      <!-- Motor Type -->
+      <param name="motor_type">${motors['joint0']['motor_type']}</param>
+
+      <!-- Command Interfaces -->
+      <command_interface name="position_des"/>
+      <command_interface name="velocity_des"/>
+      <command_interface name="kp"/>
+      <command_interface name="kd"/>
+      <command_interface name="feedforward"/>
+      
+      <!-- State Interfaces -->
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+
+    <!-- ========================================================= -->
+    <!--               连接在 /dev/ttyACM1 上的电机                  -->
+    <!-- ========================================================= -->
+    <joint name="joint1">
+      <!-- Serial Params -->
+      <param name="serial_port">${motors['joint1']['port']}</param>
+      <param name="baud_rate">${motors['joint1']['baud']}</param>
+      <!-- CAN ID -->
+      <param name="can_id">${motors['joint1']['can_id']}</param>
+      <param name="mst_id">${motors['joint1']['mst_id']}</param>
+      <!-- Motor Type -->
+      <param name="motor_type">${motors['joint1']['motor_type']}</param>
+
+      <!-- Command Interfaces -->
+      <command_interface name="position_des"/>
+      <command_interface name="velocity_des"/>
+      <command_interface name="kp"/>
+      <command_interface name="kd"/>
+      <command_interface name="feedforward"/>
+      
+      <!-- State Interfaces -->
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    </ros2_control>
+
+  </xacro:macro>
+
+</robot>
