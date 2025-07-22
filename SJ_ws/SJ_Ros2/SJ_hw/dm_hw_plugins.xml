@@ -1,0 +1,9 @@
+<library path="dm_hw"> <!-- 这里的 path 是相对于 install/lib/<package_name>/ 的路径，通常就是库名 -->
+  <class name="damiao/DmHW"
+         type="damiao::DmHW"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Hardware interface for Damiao motors over serial-CAN.
+    </description>
+  </class>
+</library>
