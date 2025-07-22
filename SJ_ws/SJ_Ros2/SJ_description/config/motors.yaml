@@ -1,0 +1,13 @@
+joint0:
+  port: /dev/ttyACM0
+  baud: 921600
+  can_id: 1
+  mst_id: 17
+  motor_type: DM4340
+
+joint1:
+  port: /dev/ttyACM1
+  baud: 921600
+  can_id: 3
+  mst_id: 19
+  motor_type: DM4340
