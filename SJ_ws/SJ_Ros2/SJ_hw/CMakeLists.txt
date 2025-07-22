@@ -6,6 +6,8 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBSERIAL REQUIRED libserial)
 
 add_library(damiao_driver SHARED
   src/damiao.cpp
@@ -14,6 +16,7 @@ add_library(damiao_driver SHARED
 target_include_directories(damiao_driver PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
+  ${LIBSERIAL_INCLUDE_DIRS}
 )
 ament_target_dependencies(damiao_driver
   rclcpp 
@@ -35,7 +38,7 @@ ament_target_dependencies(dm_hw
   rclcpp_lifecycle
 )
 
-target_link_libraries(dm_hw PRIVATE damiao_driver)
+target_link_libraries(dm_hw damiao_driver)
 
 # 安装插件声明 XML
 install(FILES dm_hw_plugins.xml
