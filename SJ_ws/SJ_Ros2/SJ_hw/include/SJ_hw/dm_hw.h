@@ -1,7 +1,7 @@
 /*** 
  * @Author: _yerik
  * @Date: 2025-07-22 14:21:17
- * @LastEditTime: 2025-07-22 17:02:47
+ * @LastEditTime: 2025-07-23 00:38:40
  * @LastEditors: _yerik
  * @Description: 
  * @FilePath: /Simple_Joint/SJ_ws/SJ_Ros2/SJ_hw/include/SJ_hw/dm_hw.h
@@ -54,6 +54,8 @@ private:
 
   //Joint-to-motor mapping relationships
   std::unordered_map<int, damiao::Motor_Control*> joint_to_driver_map_;
+
+  std::unordered_map<std::string, std::unordered_map<int, DmActData>> port_to_motors_config_;
 };
 
 RCLCPP_SHARED_PTR_DEFINITIONS(DmHW)
