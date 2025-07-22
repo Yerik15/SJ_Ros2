@@ -1,45 +1,55 @@
 cmake_minimum_required(VERSION 3.8)
 project(SJ_hw)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+find_package(ament_cmake REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 
-# find dependencies
-set(THIS_PACKAGE_INCLUDE_DEPENDS
+add_library(damiao_driver SHARED
+  src/damiao.cpp
+)
+
+target_include_directories(damiao_driver PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(damiao_driver
+  rclcpp 
+)
+
+add_library(dm_hw SHARED
+  src/dm_hw.cpp
+)
+
+target_include_directories(dm_hw PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(dm_hw
   hardware_interface
   pluginlib
   rclcpp
   rclcpp_lifecycle
 )
 
-# find dependencies
-find_package(ament_cmake REQUIRED)
-foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
-  find_package(${Dependency} REQUIRED)
-endforeach()
-
-add_library(dm_hw SHARED
-  src/dm_hw.cpp
-)
-
-ament_target_dependencies(dm_hw
-  pluginlib
-  hardware_interface
-)
-
-pluginlib_export_plugin_description_file(hardware_interface dm_hw_plugins.xml)
-
-# 安装库
-install(TARGETS dm_hw
-  LIBRARY DESTINATION lib
-)
+target_link_libraries(dm_hw PRIVATE damiao_driver)
 
 # 安装插件声明 XML
 install(FILES dm_hw_plugins.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
+
+pluginlib_export_plugin_description_file(hardware_interface dm_hw_plugins.xml)
+
+install(TARGETS dm_hw damiao_driver
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
