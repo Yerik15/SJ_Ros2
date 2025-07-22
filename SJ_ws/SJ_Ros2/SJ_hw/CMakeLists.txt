@@ -19,20 +19,24 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-# add_executable(serial_node src/serial_node.cpp)
+add_library(dm_hw SHARED
+  src/dm_hw.cpp
+)
 
-# ament_target_dependencies(#serial_node
-#   rclcpp
-#   #serial
-# )
+ament_target_dependencies(dm_hw
+  pluginlib
+  hardware_interface
+)
 
-# install(TARGETS serial_node
-#   DESTINATION lib/${PROJECT_NAME}
-# )
+pluginlib_export_plugin_description_file(hardware_interface dm_hw_plugins.xml)
 
-pluginlib_export_plugin_description_file(${PROJECT_NAME} dm_hw_plugins.xml)
-install(
-  FILES dm_hw_plugins.xml
+# 安装库
+install(TARGETS dm_hw
+  LIBRARY DESTINATION lib
+)
+
+# 安装插件声明 XML
+install(FILES dm_hw_plugins.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
