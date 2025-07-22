@@ -21,10 +21,10 @@ endforeach()
 
 # add_executable(serial_node src/serial_node.cpp)
 
-ament_target_dependencies(serial_node
-  rclcpp
-  #serial
-)
+# ament_target_dependencies(#serial_node
+#   rclcpp
+#   #serial
+# )
 
 # install(TARGETS serial_node
 #   DESTINATION lib/${PROJECT_NAME}
