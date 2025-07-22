@@ -84,6 +84,7 @@ bool Motor::is_have_param(int key) const {
 }
 
 /******一个port-ACM*，一个Motor_Control**********************/
+//TODO:重构API接口，更优雅解决数据同步问题
 Motor_Control::Motor_Control(std::string serial_port,int baud_rate,
                              std::unordered_map<int, DmActData> *data_ptr)
     : data_ptr_(data_ptr) {
@@ -109,25 +110,12 @@ Motor_Control::Motor_Control(std::string serial_port,int baud_rate,
     std::cerr << "Failed to initialize serial port " << serial_port << ". Error: " << e.what() << std::endl;
     throw std::runtime_error("Motor_Control initialization failed"); 
   }
-  // serial_.setPort(serial_port);
-  // serial_.setBaudrate(seial_baud);
-  // serial_.setFlowcontrol(serial::flowcontrol_none);
-  // serial_.setParity(serial::parity_none); // default is parity_none
-  // serial_.setStopbits(serial::stopbits_one);
-  // serial_.setBytesize(serial::eightbits);
-  // serial::Timeout time_out = serial::Timeout::simpleTimeout(20);
-  // serial_.setTimeout(time_out);
-  // serial_.open();
-  // usleep(1000000); // 1s
 
   enable(); // 使能该接口下的所有电机
   // usleep(1000000);//1s
   rec_thread = std::thread([this]() {
     this->get_motor_data_thread();
   });
-  // rec_thread =
-  // std::make_unique<std::thread>(boost::bind(&Motor_Control::get_motor_data_thread,
-  // this));
   std::cerr << "Motor_Control init success!" << std::endl;
 }
 
@@ -150,6 +138,11 @@ Motor_Control::~Motor_Control() {
   if (serial_.IsOpen()) {
     serial_.Close();
   }
+
+  for (auto const& [can_id, motor_ptr] : motors) {
+      delete motor_ptr; // 释放用 new 创建的 Motor 对象
+  }
+  motors.clear();
 }
 
 void Motor_Control::enable() {
@@ -257,6 +250,7 @@ void Motor_Control::control_vel(Motor &DM_Motor, float vel) {
   WriteData(send_data);
 }
 
+//NOTE:若无法工作，请改成主动读取
 void Motor_Control::receive_param() {
   // serial_->recv((uint8_t*)&receive_data, 0xAA, sizeof(CAN_Receive_Frame));
 
