@@ -1,7 +1,7 @@
 /*** 
  * @Author: _yerik
  * @Date: 2025-07-22 14:21:01
- * @LastEditTime: 2025-07-23 00:01:23
+ * @LastEditTime: 2025-07-23 01:09:30
  * @LastEditors: _yerik
  * @Description: 
  * @FilePath: /Simple_Joint/SJ_ws/SJ_Ros2/SJ_hw/src/dm_hw.cpp
@@ -37,7 +37,6 @@ hardware_interface::CallbackReturn DmHW::on_init(const hardware_interface::Hardw
     hw_actuator_data_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
     // --- STAGE 1: Group joints by serial port from URDF info ---
-    std::unordered_map<std::string, std::unordered_map<int, DmActData>> port_to_motors_config;
     std::unordered_map<std::string, int> port_to_baud_rate;
 
     for (uint i = 0; i < info_.joints.size(); ++i)
@@ -59,7 +58,7 @@ hardware_interface::CallbackReturn DmHW::on_init(const hardware_interface::Hardw
         data.motorType = stringToMotorType(motor_type_str);
         
         // Add to the temporary grouping map
-        port_to_motors_config[serial_port][can_id] = data;
+        port_to_motors_config_[serial_port][can_id] = data;
         if (port_to_baud_rate.find(serial_port) == port_to_baud_rate.end()) {
             port_to_baud_rate[serial_port] = baud_rate;
         }
@@ -69,17 +68,17 @@ hardware_interface::CallbackReturn DmHW::on_init(const hardware_interface::Hardw
     }
 
     // --- STAGE 2: Create Motor_Control instances for each unique serial port ---
-    for (const auto& pair : port_to_motors_config)
+    for (auto& pair : port_to_motors_config_)
     {
         const std::string& port_name = pair.first;
-        auto motor_config_map_for_port = pair.second; // Make a copy
+        auto* motor_config_map_ptr = &pair.second;
         int baud_rate_for_port = port_to_baud_rate.at(port_name);
 
         RCLCPP_INFO(rclcpp::get_logger("DmHW"), "Creating Motor_Control for port '%s' at baud rate %d", port_name.c_str(), baud_rate_for_port);
 
         try {
             // Note: Motor_Control constructor needs a pointer to the map.
-            motor_controls_[port_name] = std::make_unique<damiao::Motor_Control>(port_name, baud_rate_for_port, &motor_config_map_for_port);
+            motor_controls_[port_name] = std::make_unique<damiao::Motor_Control>(port_name, baud_rate_for_port, motor_config_map_ptr);
         } catch (const std::exception& e) {
             RCLCPP_FATAL(rclcpp::get_logger("DmHW"), "Failed to create Motor_Control for port '%s': %s", port_name.c_str(), e.what());
             return hardware_interface::CallbackReturn::ERROR;
@@ -154,19 +153,53 @@ hardware_interface::CallbackReturn DmHW::on_deactivate(const rclcpp_lifecycle::S
 
 hardware_interface::return_type DmHW::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-    for (auto const& [port_name, driver] : motor_controls_)
-    {
-        driver->read(); 
+    for (auto const& [port_name, driver] : motor_controls_) {
+        driver->read();
     }
+
+    // 数据同步
+    for (uint i = 0; i < hw_actuator_data_.size(); ++i) {
+        const auto& joint_info = info_.joints[i];
+        const std::string& port = joint_info.parameters.at("serial_port");
+        int can_id = std::stoi(joint_info.parameters.at("can_id"));
+
+        // 从 map 中找到最新的状态
+        const DmActData& updated_data_from_map = port_to_motors_config_.at(port).at(can_id);
+
+        // 更新 vector 中的状态值，供控制器读取
+        hw_actuator_data_[i].pos = updated_data_from_map.pos;
+        hw_actuator_data_[i].vel = updated_data_from_map.vel;
+        hw_actuator_data_[i].effort = updated_data_from_map.effort;
+    }
+    
     return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type DmHW::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-    for (auto const& [port_name, driver] : motor_controls_)
-    {
+    // 数据同步
+    for (uint i = 0; i < hw_actuator_data_.size(); ++i) {
+        const auto& joint_info = info_.joints[i];
+        const std::string& port = joint_info.parameters.at("serial_port");
+        int can_id = std::stoi(joint_info.parameters.at("can_id"));
+
+        // 从 vector 中获取最新的命令
+        const DmActData& command_data_from_vector = hw_actuator_data_[i];
+
+        // 更新 map 中的命令值，供驱动写入
+        auto& data_in_map = port_to_motors_config_.at(port).at(can_id);
+        data_in_map.cmd_pos = command_data_from_vector.cmd_pos;
+        data_in_map.cmd_vel = command_data_from_vector.cmd_vel;
+        data_in_map.kp = command_data_from_vector.kp;
+        data_in_map.kd = command_data_from_vector.kd;
+        data_in_map.cmd_effort = command_data_from_vector.cmd_effort;
+    }
+
+    // 根据其 map 中的最命令，发送数据到串口
+    for (auto const& [port_name, driver] : motor_controls_) {
         driver->write();
     }
+    
     return hardware_interface::return_type::OK;
 }
 
