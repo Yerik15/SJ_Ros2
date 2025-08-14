@@ -32,26 +32,24 @@ namespace damiao
   public:
     // 生命周期1. 初始化硬件接口
     hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
-    // 生命周期2. 配置硬件接口
-    hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State &previous_state) override;
-    // 生命周期3. 清理硬件接口
-    hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State &previous_state) override;
+    // 生命周期2. 导出关节状态接口（供控制器读取关节状态）
+    std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+    // 生命周期3. 导出关节命令接口（供控制器下发命令）
+    std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
     // 生命周期4. 激活硬件接口
     hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State &previous_state) override;
     // 生命周期5. 失活硬件接口
     hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State &previous_state) override;
-    // 生命周期6. 错误处理
-    hardware_interface::CallbackReturn on_error(const rclcpp_lifecycle::State &previous_state) override;
-
-    // 导出状态接口（用于控制器读取关节状态）
-    std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
-    // 导出命令接口（用于控制器向关节发送控制命令）
-    std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
-
-    // 读取硬件数据（如关节位置、速度、力矩等）
+    // 生命周期6. 读取硬件数据（如关节位置、速度、力矩等）
     hardware_interface::return_type read(const rclcpp::Time &time, const rclcpp::Duration &period) override;
-    // 写入硬件命令（如目标位置、速度、力矩等）
+    // 生命周期7. 写入硬件命令（如目标位置、速度、力矩等）
     hardware_interface::return_type write(const rclcpp::Time &time, const rclcpp::Duration &period) override;
+    // 生命周期8. 配置硬件接口
+    hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State &previous_state) override;
+    // 生命周期9. 清理硬件接口
+    hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State &previous_state) override;
+    // 生命周期10. 错误处理
+    hardware_interface::CallbackReturn on_error(const rclcpp_lifecycle::State &previous_state) override;
 
   private:
     // 1. 关节数据相关
